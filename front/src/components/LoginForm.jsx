@@ -49,7 +49,7 @@ function LoginForm() {
         localStorage.user = loginForm.id;
         alert(`${loginForm.id}님 안녕하세요!`);
         setUser(loginForm.id);
-        setLoginForm({ id: "", password: "", password: "" });
+        setLoginForm({ id: "", password: "" });
       } else if (res.data.message === "pwErr") {
         alert("비밀번호가 틀렸습니다");
         setLoginForm({

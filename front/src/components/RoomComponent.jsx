@@ -13,12 +13,30 @@ function RoomComponent({ location }) {
 
   const onClickJoin = (e) => {
     e.preventDefault();
-    console.log(roomInfo);
+    (async () => {
+      const res = await axios.post("/rooms/join", roomInfo);
+      if (res.data.message === "no") {
+        alert("존재하지 않는 방입니다");
+        return;
+      } else if (res.data.message === "pwErr") {
+        alert("비밀번호가 틀렸습니다");
+        return;
+      } else {
+        // 해당 방으로 이동 시키는 로직
+      }
+    })();
   };
   const onClickMake = (e) => {
     e.preventDefault();
     (async () => {
       const res = await axios.post("/rooms/make", roomInfo);
+      if (res.data.message === "ok") {
+        // 새로 생성된 방으로 이동시키는 로직
+        alert("zz");
+      } else if (res.data.message === "exist") {
+        alert("이미 존재하는 방 이름입니다");
+        return;
+      }
     })();
   };
 
@@ -27,7 +45,7 @@ function RoomComponent({ location }) {
       <input
         type="text"
         name="roomID"
-        placeholder="방 번호를 입력하세요"
+        placeholder="방 이름을 입력하세요"
         onChange={onChangeRoomInfo}
       />
       <input
@@ -44,7 +62,7 @@ function RoomComponent({ location }) {
       <input
         type="text"
         name="roomID"
-        placeholder="방 번호를 입력하세요"
+        placeholder="방 이름을 입력하세요"
         onChange={onChangeRoomInfo}
       />
       <input
