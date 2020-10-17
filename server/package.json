@@ -1,0 +1,28 @@
+{
+  "name": "webrtc",
+  "version": "1.0.0",
+  "description": "2020-2학기 개별연구 WebRTC를 활용한 화상 컨퍼런스 콜 연구",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrucl2d/WebRTC_WebApp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jrucl2d/WebRTC_WebApp/issues"
+  },
+  "homepage": "https://github.com/jrucl2d/WebRTC_WebApp#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.5"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "socket.io": "^2.3.0"
+  }
+}
