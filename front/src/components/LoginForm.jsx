@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import RoomComponent from "./RoomComponent";
 
 function LoginForm() {
   const idRef = useRef(null);
@@ -136,12 +137,8 @@ function LoginForm() {
     <div>
       <div>{user}님 안녕하세요!</div>
       <button onClick={onClickLogout}>로그아웃</button>
-      <button>
-        <Link to="/room?todo=make">방 만들기</Link>
-      </button>
-      <button>
-        <Link to="/room?todo=join">방 참가하기</Link>
-      </button>
+      <br />
+      <RoomComponent />
     </div>
   );
   const clickRegister = (

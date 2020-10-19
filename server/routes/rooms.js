@@ -1,14 +1,10 @@
 const router = require("express").Router();
 const rooms = [
   {
-    roomID: "123",
+    roomID: "굉장한 방",
     roomPW: "123",
   },
 ];
-
-router.get("/", (req, res, next) => {
-  res.send("a");
-});
 
 router.post("/make", async (req, res, next) => {
   const newRoom = req.body;
@@ -25,22 +21,8 @@ router.post("/make", async (req, res, next) => {
     return res.send({ message: "ok" });
   }
 });
-router.post("/join", async (req, res, next) => {
-  const wantRoom = req.body;
-  let exRoom = null;
-  rooms.forEach((room) => {
-    if (room.roomID === wantRoom.roomID) {
-      exRoom = room;
-    }
-  });
-  if (!exRoom) {
-    return res.send({ message: "no" });
-  }
-  if (exRoom.roomPW === wantRoom.roomPW) {
-    return res.send({ message: "ok" });
-  } else {
-    return res.send({ message: "pwErr" });
-  }
+router.get("/all", async (req, res, next) => {
+  res.json(rooms);
 });
 
 module.exports = router;
