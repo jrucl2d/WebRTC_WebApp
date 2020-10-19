@@ -25,6 +25,14 @@ function ChatRoom({ location }) {
   return (
     <div>
       <h1>{location.pathname.split("/")[2]}</h1>
+      <div>
+        <div>멤버 목록</div>
+        <ul>
+          {members.map((v) => (
+            <li>{v}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
