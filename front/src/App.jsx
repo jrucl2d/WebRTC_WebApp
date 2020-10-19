@@ -1,6 +1,5 @@
 import React from "react";
 import LoginForm from "./components/LoginForm";
-import RoomComponent from "./components/RoomComponent";
 import { Route } from "react-router-dom";
 
 function App() {
