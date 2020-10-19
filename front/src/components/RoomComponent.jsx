@@ -45,13 +45,13 @@ function RoomComponent() {
       const check = await axios.post("/rooms/join", {
         roomID: selectedRoom,
         roomPW: passwordInput,
+        member: localStorage.user,
       });
       if (check.data.message === "pwErr") {
         alert("비밀번호가 틀렸습니다");
         return;
       }
-      // 새로운 방으로 이동시키는 로직
-      window.location.href = "/rooms";
+      window.location.href = `/room/${encodeURIComponent(selectedRoom)}`;
     })();
   };
 
