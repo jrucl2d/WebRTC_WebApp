@@ -22,6 +22,7 @@ function VideoScreen({ isInitiator }) {
   const [remoteStream, setRemoteStream] = useState(null);
   const [pc, setPc] = useState(null);
   const localVideo = useRef(null);
+  const remoteVideo = useRef(null);
 
   const sendMessage = (message) => {
     console.log("Client Message : " + message);
@@ -87,18 +88,22 @@ function VideoScreen({ isInitiator }) {
     }
   }
 
-  function handleCreateOfferError(event) {
-    console.log("createOffer() error: ", event);
-  }
-
   function handleRemoteStreamAdded(event) {
     console.log("remote stream added");
-    remoteStream = event.stream;
-    remoteVideo.srcObject = remoteStream;
+    const newStream = event.stream;
+    remoteVideo.srcObject = newStream;
+    setRemoteStream(newStream);
   }
   function doCall() {
     console.log("Sending offer to peer");
     pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
+  }
+  function setLocalAndSendMessage(sessionDescription) {
+    pc.setLocalDescription(sessionDescription);
+    sendMessage(sessionDescription);
+  }
+  function handleCreateOfferError(event) {
+    console.log("createOffer() error: ", event);
   }
 
   function doAnswer() {
@@ -107,11 +112,6 @@ function VideoScreen({ isInitiator }) {
       setLocalAndSendMessage,
       onCreateSessionDescriptionError
     );
-  }
-
-  function setLocalAndSendMessage(sessionDescription) {
-    pc.setLocalDescription(sessionDescription);
-    sendMessage(sessionDescription);
   }
 
   const onPlayCamera = (e) => {
@@ -148,13 +148,27 @@ function VideoScreen({ isInitiator }) {
   });
 
   Socket.on("connect", () => {
-    Socket.emit("");
+    Socket.emit("onCollabo", Socket.id);
+  });
+  Socket.on("collabo", function (room) {
+    socket.emit("create or join", room);
+    console.log("Attempted to create or  join room", room);
+  });
+  Socket.on("join", function (room) {
+    console.log("Another peer made a request to join room " + room);
+    console.log("This peer is the initiator of room " + room + "!");
+    setIsChannelReady(true);
+  });
+  Socket.on("joined", function (room) {
+    console.log("joined: " + room);
+    isChannelReady = true;
   });
 
   return (
     <div>
       <button onClick={onPlayCamera}>카메라 켜기</button>
       <video ref={localVideo} autoPlay width="200px"></video>
+      <video ref={remoteVideo} autoPlay width="200px"></video>
       <script src="/socket.io/socket.io.js"></script>
     </div>
   );
