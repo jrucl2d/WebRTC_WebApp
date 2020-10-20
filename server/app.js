@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
 const app = express();
+const webSocket = require("./socket");
 
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
@@ -27,6 +28,8 @@ app.use((err, req, res, next) => {
   ${process.env.NODE_ENV !== "production" ? err : {}}`);
 });
 
-app.listen(app.get("port"), () => {
+const server = app.listen(app.get("port"), () => {
   console.log(`server is running on port ${app.get("port")}`);
 });
+
+webSocket(server);

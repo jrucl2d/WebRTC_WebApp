@@ -1,6 +1,8 @@
 import React, { useRef, useState } from "react";
-import { Socket } from "socket.io-client";
+import io from "socket.io-client";
 import produce from "immer";
+
+const socket = io();
 
 const pcConfig = {
   iceServers: [
@@ -26,7 +28,7 @@ function VideoScreen({ isInitiator }) {
 
   const sendMessage = (message) => {
     console.log("Client Message : " + message);
-    Socket.emit("message", message);
+    socket.emit("message", message);
   };
 
   // 스트림 요청 성공시
@@ -108,10 +110,9 @@ function VideoScreen({ isInitiator }) {
 
   function doAnswer() {
     console.log("Sending answer to peer");
-    pc.createAnswer().then(
-      setLocalAndSendMessage,
-      onCreateSessionDescriptionError
-    );
+    pc.createAnswer().then(setLocalAndSendMessage, () => {
+      console.log("sessionDescription create error");
+    });
   }
 
   const onPlayCamera = (e) => {
@@ -125,7 +126,7 @@ function VideoScreen({ isInitiator }) {
       .catch((err) => console.error(err));
   };
 
-  Socket.on("message", (message) => {
+  socket.on("message", (message) => {
     console.log("Client received message :", message);
     if (message === "got user media") {
       maybeStart();
@@ -147,19 +148,19 @@ function VideoScreen({ isInitiator }) {
     }
   });
 
-  Socket.on("connect", () => {
-    Socket.emit("onCollabo", Socket.id);
+  socket.on("connect", () => {
+    socket.emit("onCollabo", socket.id);
   });
-  Socket.on("collabo", function (room) {
+  socket.on("collabo", function (room) {
     socket.emit("create or join", room);
     console.log("Attempted to create or  join room", room);
   });
-  Socket.on("join", function (room) {
+  socket.on("join", function (room) {
     console.log("Another peer made a request to join room " + room);
     console.log("This peer is the initiator of room " + room + "!");
     setIsChannelReady(true);
   });
-  Socket.on("joined", function (room) {
+  socket.on("joined", function (room) {
     console.log("joined: " + room);
     isChannelReady = true;
   });
@@ -169,7 +170,6 @@ function VideoScreen({ isInitiator }) {
       <button onClick={onPlayCamera}>카메라 켜기</button>
       <video ref={localVideo} autoPlay width="200px"></video>
       <video ref={remoteVideo} autoPlay width="200px"></video>
-      <script src="/socket.io/socket.io.js"></script>
     </div>
   );
 }
