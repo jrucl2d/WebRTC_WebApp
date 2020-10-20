@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import LocalVideo from "./LocalVideo";
+import VideoScreen from "./VideoScreen";
 
 function ChatRoom({ location }) {
   const [members, setMembers] = useState([]);
@@ -32,7 +32,7 @@ function ChatRoom({ location }) {
             <li key={member}>{member}</li>
           ))}
         </ul>
-        <LocalVideo isInitiator={members.length === 1} />
+        <VideoScreen isInitiator={members.length === 1} />
       </div>
     </div>
   );
