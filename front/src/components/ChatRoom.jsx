@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import LocalVideo from "./LocalVideo";
 
 function ChatRoom({ location }) {
   const [members, setMembers] = useState([]);
@@ -21,17 +22,17 @@ function ChatRoom({ location }) {
     })();
   }, []);
 
-  console.log();
   return (
     <div>
       <h1>{location.pathname.split("/")[2]}</h1>
       <div>
         <div>멤버 목록</div>
         <ul>
-          {members.map((v) => (
-            <li>{v}</li>
+          {members.map((member) => (
+            <li key={member}>{member}</li>
           ))}
         </ul>
+        <LocalVideo isInitiator={members.length === 1} />
       </div>
     </div>
   );
