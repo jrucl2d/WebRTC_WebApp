@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import io from "socket.io-client";
 import VideoScreen from "./VideoScreen";
 
@@ -10,28 +9,25 @@ function ChatRoom({ location }) {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const roomMembers = await axios.get(
-        `/rooms/${location.pathname.split("/")[2]}/members`
-      );
-      setMembers(roomMembers.data);
-      // url 접근 방지
-      const isMember = roomMembers.data.findIndex(
+    socket = io(SERVERLOCATION);
+    socket.emit("roomInfo");
+    socket.on("roomInfoFromServer", ({ rooms }) => {
+      const isMemeber = rooms[0].member.findIndex(
         (v) => v === localStorage.user
       );
-      if (isMember === -1) {
-        alert("방에 참여할 자격이 없습니다");
+      if (isMemeber === -1) {
+        alert("방에 참가할 자격이 없습니다");
         window.location.href = "/";
       }
-    })();
+      setMembers(rooms[0].member);
+    });
   }, []);
 
-  // socket 처리
+  // 새로운 멤버 추가
   useEffect(() => {
-    socket = io(SERVERLOCATION);
     socket.on("newMemberJoined", (rooms) => {
-      console.log(rooms);
-      setMembers([]);
+      const gotMembers = rooms[0].member;
+      setMembers(gotMembers);
     });
   }, [members]);
 

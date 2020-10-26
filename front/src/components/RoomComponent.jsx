@@ -51,13 +51,15 @@ function RoomComponent() {
       roomPW: passwordInput,
       member: localStorage.user,
     });
+    socket.on("welcome", () => {
+      console.log("join success");
+    });
     socket.on("wrongPW", ({ message }) => {
       alert(message);
+      return;
     });
-    socket.on("welcome", ({ message }) => {
-      alert(message);
-      window.location.href = `/room/${encodeURIComponent(selectedRoom)}`;
-    });
+
+    window.location.href = `/room/${encodeURIComponent(selectedRoom)}`;
   };
 
   useEffect(() => {

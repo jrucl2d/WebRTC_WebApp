@@ -15,12 +15,19 @@ module.exports = (server) => {
       });
       if (exRoom.roomPW === roomPW) {
         exRoom.member.push(member); // 해당 방에 멤버로 참여
-        socket.emit("welcome", { message: "방에 입장합니다" });
+        socket.join(roomID);
+        socket.emit("welcome");
+        socket.broadcast.emit("newMemberJoined", rooms);
         return;
       }
       socket.emit("wrongPW", { message: "비밀번호가 틀렸습니다" });
       // socket.broadcast.to(roomID).emit("newMemberJoined", rooms); // 나머지 멤버들에게 broadcast
       // socket.join(roomID); // 해당 room에 join
+    });
+
+    // 유저가 새로 방에 join 하고 멤버 정보를 요청
+    socket.on("roomInfo", () => {
+      socket.emit("roomInfoFromServer", { rooms });
     });
   });
 };
