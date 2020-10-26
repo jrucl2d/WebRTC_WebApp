@@ -10,23 +10,29 @@ function ChatRoom({ location }) {
 
   useEffect(() => {
     socket = io(SERVERLOCATION);
-    socket.emit("roomInfo");
-    socket.on("roomInfoFromServer", ({ rooms }) => {
-      const isMemeber = rooms[0].member.findIndex(
-        (v) => v === localStorage.user
-      );
+    socket.emit("roomInfo", { roomID: location.pathname.split("/")[2] });
+    let room;
+    socket.on("roomInfoFromServer", (room) => {
+      room = room;
+      const isMemeber = room.member.findIndex((v) => v === localStorage.user);
       if (isMemeber === -1) {
         alert("방에 참가할 자격이 없습니다");
         window.location.href = "/";
       }
-      setMembers(rooms[0].member);
+      setMembers(room.member);
     });
+    return () => {
+      // socket.emit("disconnect", {
+      //   roomID: room.roomID,
+      //   member: localStorage.user,
+      // }); // disconnect 이벤트 emit하고
+      // socket.off(); // socket 자체를 닫아버림
+    };
   }, []);
 
   // 새로운 멤버 추가
   useEffect(() => {
-    socket.on("newMemberJoined", (rooms) => {
-      const gotMembers = rooms[0].member;
+    socket.on("memberChanged", (gotMembers) => {
       setMembers(gotMembers);
     });
   }, [members]);
