@@ -47,13 +47,27 @@ function RoomListPage() {
     socket.emit("makeRoom", roomID);
   };
 
+  const onClickJoin = (e) => {
+    socket.emit("joinRoom", {
+      roomID: e.target.name,
+      username: localStorage.username,
+    });
+    alert(`[${e.target.name}] 방에 입장합니다!`);
+  };
+
   return (
     <div>
       <h1>회의방 목록</h1>
       <ul>
         {rooms.map((room) => (
           <li key={room.roomID}>
-            <Link to={`/room/${room.roomID}`}>{room.roomID}</Link>
+            <Link
+              name={room.roomID}
+              onClick={onClickJoin}
+              to={`/room/${room.roomID}`}
+            >
+              {room.roomID}
+            </Link>
           </li>
         ))}
       </ul>
