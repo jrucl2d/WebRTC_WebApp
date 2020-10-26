@@ -45,21 +45,19 @@ function RoomComponent() {
     if (!passwordInput) {
       return;
     }
-    (async () => {
-      const check = await axios.post("/rooms/join", {
-        roomID: selectedRoom,
-        roomPW: passwordInput,
-        member: localStorage.user,
-      });
-      if (check.data.message === "pwErr") {
-        alert("비밀번호가 틀렸습니다");
-        return;
-      }
-      socket = io(SERVERLOCATION);
-      socket.emit("join", { roomID: selectedRoom });
-
+    socket = io(SERVERLOCATION);
+    socket.emit("join", {
+      roomID: selectedRoom,
+      roomPW: passwordInput,
+      member: localStorage.user,
+    });
+    socket.on("wrongPW", ({ message }) => {
+      alert(message);
+    });
+    socket.on("welcome", ({ message }) => {
+      alert(message);
       window.location.href = `/room/${encodeURIComponent(selectedRoom)}`;
-    })();
+    });
   };
 
   useEffect(() => {

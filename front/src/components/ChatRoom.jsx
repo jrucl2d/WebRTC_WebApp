@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import io from "socket.io-client";
 import VideoScreen from "./VideoScreen";
+
+const SERVERLOCATION = "localhost:8000";
+let socket;
 
 function ChatRoom({ location }) {
   const [members, setMembers] = useState([]);
@@ -21,6 +25,15 @@ function ChatRoom({ location }) {
       }
     })();
   }, []);
+
+  // socket 처리
+  useEffect(() => {
+    socket = io(SERVERLOCATION);
+    socket.on("newMemberJoined", (rooms) => {
+      console.log(rooms);
+      setMembers([]);
+    });
+  }, [members]);
 
   return (
     <div>

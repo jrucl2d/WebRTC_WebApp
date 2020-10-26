@@ -32,20 +32,4 @@ router.post("/make", async (req, res, next) => {
   }
 });
 
-router.post("/join", async (req, res, next) => {
-  const { roomID, roomPW, member } = req.body;
-  let exRoom = null;
-  rooms.forEach((room) => {
-    if (room.roomID === roomID) {
-      exRoom = room;
-    }
-  });
-  if (exRoom.roomPW === roomPW) {
-    exRoom.member.push(member); // 해당 방에 멤버로 참여
-    req.app.set("roomInfo", rooms);
-    return res.send({ message: "ok" });
-  }
-  res.send({ message: "pwErr" });
-});
-
 module.exports = router;
