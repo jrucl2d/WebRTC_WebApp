@@ -36,6 +36,8 @@ function RoomListPage() {
       }
     });
     if (exRoom) {
+      setRoomID("");
+      roomIDRef.current.value = "";
       alert("이미 존재하는 방입니다");
       return;
     }

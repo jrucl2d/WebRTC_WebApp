@@ -20,7 +20,8 @@ module.exports = (server) => {
     });
     socket.on("makeRoom", (roomID) => {
       rooms.push({ roomID, member: [] });
-      socket.emit("giveRoomList", rooms);
+
+      io.emit("giveRoomList", rooms); // 전체에게 전달
     });
   });
 };
