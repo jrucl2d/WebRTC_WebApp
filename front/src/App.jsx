@@ -1,13 +1,11 @@
 import React from "react";
-import LoginForm from "./components/LoginForm";
 import { Route } from "react-router-dom";
-import ChatRoom from "./components/ChatRoom";
+import MainPage from "./components/MainPage";
 
 function App() {
   return (
     <div className="App">
-      <Route exact path="/" component={LoginForm} />
-      <Route path="/room" component={ChatRoom} />
+      <Route exact path="/" component={MainPage} />
     </div>
   );
 }

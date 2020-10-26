@@ -12,8 +12,6 @@ app.use(express.urlencoded({ extended: true }));
 app.set("port", process.env.PORT || 8000);
 
 // Routing
-app.use("/", require("./routes"));
-app.use("/users", require("./routes/users"));
 app.use("/rooms", require("./routes/rooms"));
 
 app.use((req, res, next) => {
