@@ -1,11 +1,5 @@
 const router = require("express").Router();
-const rooms = [
-  {
-    roomID: "굉장한방",
-    roomPW: "123",
-    member: [],
-  },
-];
+const rooms = require("../roomData");
 
 // 방 정보를 요구
 router.get("/all", async (req, res, next) => {
@@ -48,6 +42,7 @@ router.post("/join", async (req, res, next) => {
   });
   if (exRoom.roomPW === roomPW) {
     exRoom.member.push(member); // 해당 방에 멤버로 참여
+    req.app.set("roomInfo", rooms);
     return res.send({ message: "ok" });
   }
   res.send({ message: "pwErr" });

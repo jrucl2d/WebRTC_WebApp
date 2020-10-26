@@ -32,7 +32,7 @@ function ChatRoom({ location }) {
             <li key={member}>{member}</li>
           ))}
         </ul>
-        <VideoScreen isInitiator={members.length === 1} />
+        {/* <VideoScreen isInitiator={members.length === 1} /> */}
       </div>
     </div>
   );

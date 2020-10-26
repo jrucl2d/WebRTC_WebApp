@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import io from "socket.io-client";
+
+const SERVERLOCATION = "localhost:8000";
+let socket;
 
 function RoomComponent() {
   const roomIDRef = useRef(null);
@@ -51,6 +55,9 @@ function RoomComponent() {
         alert("비밀번호가 틀렸습니다");
         return;
       }
+      socket = io(SERVERLOCATION);
+      socket.emit("join", { roomID: selectedRoom });
+
       window.location.href = `/room/${encodeURIComponent(selectedRoom)}`;
     })();
   };
