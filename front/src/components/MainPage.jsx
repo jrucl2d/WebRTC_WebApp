@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
+import { Link } from "react-router-dom";
 
 const SERVERCLIENT = "localhost:8000";
 let socket;
@@ -23,6 +24,7 @@ function MainPage({ location }) {
     e.preventDefault();
     localStorage.removeItem("username");
     setLoggedInUser("");
+    window.location.href = "/";
   };
   return (
     <div>
@@ -31,6 +33,8 @@ function MainPage({ location }) {
         <div>
           <div>{localStorage.username}님 안녕하세요</div>
           <button onClick={onClickLogout}>로그아웃</button>
+          <br />
+          <Link to="/room">회의 방</Link>
         </div>
       ) : (
         <form>
