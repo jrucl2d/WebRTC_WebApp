@@ -13,25 +13,36 @@ function RoomListPage() {
   useEffect(() => {
     socket = io(SERVERLOCATION);
     socket.emit("getRoomList");
+  }, []);
+  useEffect(() => {
     socket.on("giveRoomList", (rooms) => {
       setRooms(rooms);
     });
-  }, []);
+  }, [rooms]);
 
   const onChangeRoomID = (e) => {
     setRoomID(e.target.value);
   };
   const onClickMakeRoom = (e) => {
     e.preventDefault();
-    socket.emit("makeRoom", roomID);
-    socket.on("makeRoomSuccess", ({ message, rooms }) => {
-      alert(message); // 두 번 alert 오류
-      setRooms(rooms);
+    if (roomID === "") {
+      alert("방 이름을 입력하세요");
+      return;
+    }
+    let exRoom = null;
+    rooms.forEach((room) => {
+      if (room.roomID === roomID) {
+        exRoom = room;
+      }
     });
-    socket.on("makeRoomFailure", ({ message }) => {
-      alert(message);
-    });
+    if (exRoom) {
+      alert("이미 존재하는 방입니다");
+      return;
+    }
+    alert(`[${roomID}] 방이 생성되었습니다`);
+    setRoomID("");
     roomIDRef.current.value = "";
+    socket.emit("makeRoom", roomID);
   };
 
   return (
