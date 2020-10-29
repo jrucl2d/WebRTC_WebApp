@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
+import MyVideo from "./MyVideo";
 
 const SERVERLOCATION = "localhost:8000";
 let socket;
@@ -24,6 +25,7 @@ function RoomPage({ location, history }) {
     };
   }, [ROOMNAME, history]);
 
+  // 새 멤버 들어오는 경우
   useEffect(() => {
     socket.on("giveMemberList", (memberList) => {
       if (
@@ -49,6 +51,7 @@ function RoomPage({ location, history }) {
           </li>
         ))}
       </ul>
+      <MyVideo isInitiator={members.length === 1 ? true : false} />
     </div>
   );
 }
