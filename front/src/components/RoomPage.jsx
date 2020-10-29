@@ -11,6 +11,13 @@ function RoomPage({ location, history }) {
   useEffect(() => {
     socket = io(SERVERLOCATION);
     socket.emit("getMemberList", ROOMNAME);
+    return () => {
+      socket.emit("memberDisconnect", {
+        username: localStorage.username,
+        roomID: ROOMNAME,
+      });
+      socket.off();
+    };
   }, []);
 
   useEffect(() => {

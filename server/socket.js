@@ -27,7 +27,13 @@ module.exports = (server) => {
       const exRoom = getExactRoom(roomID);
       exRoom.members.push(username);
       socket.join(roomID);
-      // console.log(socket.adapter.rooms);
+    });
+    socket.on("memberDisconnect", ({ username, roomID }) => {
+      socket.leave(roomID);
+      const exRoom = getExactRoom(roomID);
+      const newMembers = exRoom.members.filter((v) => v !== username);
+      exRoom.members = newMembers;
+      io.emit("giveMemberList", exRoom.members);
     });
 
     // room에 들어간 후 멤버와 관련된 통신
