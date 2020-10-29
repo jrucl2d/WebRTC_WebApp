@@ -31,6 +31,9 @@ module.exports = (server) => {
     socket.on("memberDisconnect", ({ username, roomID }) => {
       socket.leave(roomID);
       const exRoom = getExactRoom(roomID);
+      if (!exRoom) {
+        return;
+      }
       const newMembers = exRoom.members.filter((v) => v !== username);
       exRoom.members = newMembers;
       io.emit("giveMemberList", exRoom.members);
@@ -39,7 +42,11 @@ module.exports = (server) => {
     // room에 들어간 후 멤버와 관련된 통신
     socket.on("getMemberList", (roomID) => {
       const exRoom = getExactRoom(roomID);
-      io.emit("giveMemberList", exRoom.members);
+      if (!exRoom) {
+        io.emit("noRoom");
+      } else {
+        io.emit("giveMemberList", exRoom.members);
+      }
     });
   });
 };

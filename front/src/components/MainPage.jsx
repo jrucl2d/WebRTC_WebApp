@@ -3,6 +3,7 @@ import io from "socket.io-client";
 import { Link } from "react-router-dom";
 
 const SERVERCLIENT = "localhost:8000";
+// eslint-disable-next-line
 let socket;
 
 function MainPage({ location }) {

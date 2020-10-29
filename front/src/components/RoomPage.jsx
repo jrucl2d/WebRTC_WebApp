@@ -11,6 +11,10 @@ function RoomPage({ location, history }) {
   useEffect(() => {
     socket = io(SERVERLOCATION);
     socket.emit("getMemberList", ROOMNAME);
+    socket.on("noRoom", () => {
+      alert("존재하지 않는 방입니다");
+      history.push("/room");
+    });
     return () => {
       socket.emit("memberDisconnect", {
         username: localStorage.username,
@@ -18,18 +22,20 @@ function RoomPage({ location, history }) {
       });
       socket.off();
     };
-  }, []);
+  }, [ROOMNAME, history]);
 
   useEffect(() => {
     socket.on("giveMemberList", (memberList) => {
-      setMembers(memberList);
       if (
-        memberList.findIndex((member) => member == localStorage.username) === -1
+        memberList.findIndex((member) => member === localStorage.username) ===
+        -1
       ) {
         alert("방에 입장할 자격이 없습니다");
         history.push("/room");
       }
+      setMembers(memberList);
     });
+    // eslint-disable-next-line
   }, [members]);
 
   return (
@@ -38,7 +44,7 @@ function RoomPage({ location, history }) {
       <ul>
         {members.map((member, index) => (
           <li key={member}>
-            {index == 0 && "방장: "}
+            {index === 0 && "방장: "}
             {member}
           </li>
         ))}
