@@ -70,21 +70,24 @@ module.exports = async (server) => {
       }
     });
 
-    socket.on("message", (message) => {
-      console.log("From client : ", message);
-      if (message.type === "newUserMedia") {
-        const exRoom = getExactRoom(rooms, message.roomID);
-        console.log("현재 방 인원 : ", exRoom.members.length);
-        socket.broadcast.emit("message", {
-          type: "roomNum",
-          number: exRoom.members.length,
-        });
-      }
-      socket.broadcast.emit("message", message);
-    });
-    socket.on("isInitiator", ({ roomID }) => {
+    // webRTC 관련 통신
+    socket.on("join room", ({ roomID, username }) => {
       const exRoom = getExactRoom(rooms, roomID);
-      socket.emit("initiator", exRoom.members[0]);
+      const otherIndex = exRoom.members.findIndex(
+        (member) => member != username
+      );
+      if (otherIndex !== -1) {
+        socket.emit("other user", exRoom.members[otherIndex]);
+      }
+    });
+    socket.on("offer", (payload) => {
+      socket.broadcast.emit("offer", payload);
+    });
+    socket.on("answer", (payload) => {
+      socket.broadcast.emit("answer", payload);
+    });
+    socket.on("iceCandidate", (gotInfo) => {
+      socket.broadcast.emit("iceCandidate", gotInfo.candidate);
     });
   });
 };

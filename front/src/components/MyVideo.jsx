@@ -1,143 +1,137 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import io from "socket.io-client";
 
-let pc;
 const SERVERLOCATION = "localhost:8000";
 let socket;
-let isChannelReady = false;
-let isInitiator = false;
 
 function MyVideo({ roomID }) {
-  const [localStream, setLocalStream] = useState(null);
-  const [remoteStream, setRemoteStream] = useState([]);
-  const [messageFromServer, setMessageFromServer] = useState(null);
-  const [isStarted, setIsStarted] = useState(false);
-  const localVideo = useRef(null);
-  socket = io(SERVERLOCATION);
-
-  // 스트림 요청 성공시
-  const getStream = useCallback((stream) => {
-    console.log("local stream added");
-    setLocalStream(stream);
-    localVideo.current.srcObject = stream;
-    socket.emit("message", { type: "newUserMedia", roomID });
-    if (isInitiator) {
-      maybeStart();
-    }
-  });
-  const createPeerConnection = useCallback(() => {
-    try {
-      pc = new RTCPeerConnection(null);
-      pc.onicecandidate = handleIceCandidate;
-      pc.onaddstream = handleRemoteStreamAdded;
-      console.log("RTCPeerConnection created");
-    } catch (err) {
-      alert("RTCPeerConnection 오류!");
-      return;
-    }
-  });
-  const handleIceCandidate = useCallback((event) => {
-    if (event.candidate) {
-      socket.emit("message", {
-        type: "candidate",
-        label: event.candidate.sdpMLineIndex,
-        id: event.candidate.sdpMid,
-        candidate: event.candidate.candidate,
-      });
-    } else {
-      console.log("end of candidate");
-    }
-  });
-
-  const handleRemoteStreamAdded = useCallback(
-    (event) => {
-      console.log("remote stream added");
-      let newRemoteStream = [...remoteStream];
-      newRemoteStream.push(event.stream);
-      setRemoteStream(newRemoteStream);
-    },
-    [remoteStream]
-  );
-  const maybeStart = useCallback(() => {
-    console.log("maybeStart : ", isStarted, localStream, isChannelReady);
-    if (!isStarted && typeof localStream !== "undefined" && isChannelReady) {
-      console.log("create peer connection");
-      createPeerConnection(); // 자신의 RTCPeerConnection을 초기화, 상대방의 RTCPeerConnection과 연결
-      pc.addStream(localStream);
-      setIsStarted(true);
-      console.log("isInitiator : ", isInitiator);
-      if (isInitiator) {
-        doCall();
-      }
-    } else {
-      console.log("아직 통신 시작 안 됨");
-    }
-  });
-  const setLocal = (sessionDescription) => {
-    pc.setLocalDescription(sessionDescription);
-    socket.emit("message", sessionDescription);
-  };
-  const doCall = () => {
-    console.log("do createOffer");
-    pc.createOffer(setLocal, (event) => {
-      console.error("createOffer error : ", event);
-    });
-  };
-  const doAnswer = () => {
-    console.log("Send answer to peer");
-    pc.createAnswer().then(setLocal, (error) => {
-      console.error("session description create error ", error);
-    });
-  };
+  const localVideo = useRef();
+  const otherVideo = useRef();
+  const userStream = useRef();
+  const otherUser = useRef();
+  const peerRef = useRef();
 
   useEffect(() => {
-    socket.on("message", (message) => {
-      setMessageFromServer(message);
-      console.log("Client got message : ", message);
-      if (message.type === "newUserMedia") {
-        maybeStart();
-      } else if (message.type === "offer") {
-        if (!isInitiator && !isStarted) {
-          maybeStart();
-        }
-        pc.setRemoteDescription(new RTCSessionDescription(message));
-        doAnswer();
-      } else if (message.type === "answer" && isStarted) {
-        pc.setRemoteDescription(new RTCSessionDescription(message));
-      } else if (message.type === "candidate" && isStarted) {
-        const candidate = new RTCIceCandidate({
-          sdpMLineIndex: message.label,
-          candidate: message.candidate,
-        });
-        pc.addIceCandidate(candidate);
-      } else if (message.type === "roomNum") {
-        if (message.number >= 2) {
-          isChannelReady = true;
-        }
-      }
-    });
-  }, [messageFromServer]);
-
-  useEffect(() => {
-    socket.emit("isInitiator", { roomID });
-    socket.on("initiator", (bangjang) => {
-      isInitiator = bangjang === localStorage.username;
-    });
+    socket = io(SERVERLOCATION);
     navigator.mediaDevices
-      .getUserMedia({
-        video: true,
-        audio: true,
+      .getUserMedia({ video: true, audio: true })
+      .then(getStream);
+  }, []);
+  const getStream = (stream) => {
+    localVideo.current.srcObject = stream;
+    userStream.current = stream;
+    socket.emit("join room", { roomID, username: localStorage.username });
+
+    socket.on("other user", (userID) => {
+      callUser(userID);
+      otherUser.current = userID;
+    });
+
+    // socket.on("user joined", (userID) => {
+    //   otherUser.current = userID;
+    // });
+    socket.on("offer", handleRecieveCall);
+    socket.on("answer", handleAnswer);
+    socket.on("iceCandidate", handleNewICECandidateMsg);
+  };
+  // 상대방에게 전화 걸기(Caller의 입장)
+  const callUser = (userID) => {
+    peerRef.current = createPeer(userID); // 상대방의 peer을 생성
+    userStream.current // 상대방 peer에 현재 user의 peer을 추가
+      .getTracks()
+      .forEach((track) => peerRef.current.addTrack(track, userStream.current));
+  };
+  const createPeer = (userID) => {
+    const peer = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: "stun:stun.stunprotocol.org",
+        },
+        {
+          urls: "turn:numb.viagenie.ca",
+          credential: "muazkh",
+          username: "webrtc@live.com",
+        },
+      ],
+    });
+    peer.onicecandidate = handleICECandidateEvent;
+    peer.ontrack = handleTrackEvent;
+    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(userID);
+    return peer;
+  };
+  const handleNegotiationNeededEvent = (userID) => {
+    peerRef.current
+      .createOffer()
+      .then((offer) => peerRef.current.setLocalDescription(offer))
+      .then(() => {
+        const userOffer = {
+          target: userID,
+          caller: localStorage.username,
+          sdp: peerRef.current.localDescription,
+        };
+        socket.emit("offer", userOffer);
       })
-      .then(getStream)
-      .catch((err) => console.error(err));
-  }, [SERVERLOCATION]);
+      .catch((err) => console.log(err));
+  };
+
+  // 상대방에게서 전화 받기(Callee의 입장)
+  const handleRecieveCall = (gotInfo) => {
+    peerRef.current = createPeer();
+    const description = new RTCSessionDescription(gotInfo.sdp); // 상대방에게서 받은 sdp
+    peerRef.current
+      .setRemoteDescription(description) // 상대방 sdp 설정하고
+      .then(() =>
+        userStream.current
+          .getTracks()
+          .forEach((track) =>
+            peerRef.current.addTrack(track, userStream.current)
+          )
+      )
+      .then(() => {
+        return peerRef.current.createAnswer(); // anwer(자신의 sdp) 생성
+      })
+      .then((answer) => {
+        return peerRef.current.setLocalDescription(answer); // 자신의 sdp를 설정
+      })
+      .then(() => {
+        const userOffer = {
+          target: gotInfo.caller,
+          caller: localStorage.username,
+          sdp: peerRef.current.localDescription,
+        };
+        socket.emit("answer", userOffer); // 자신의 설정한 sdp를 answer로 전송
+      });
+  };
+  const handleAnswer = (message) => {
+    const description = new RTCSessionDescription(message.sdp); // answer로 전달받은 sdp를 상대방 sdp로 설정
+    peerRef.current
+      .setRemoteDescription(description)
+      .catch((err) => console.log(err));
+  };
+  // 실제 peer에 ICE 후보가 전달되면 설정하는 것
+  const handleICECandidateEvent = (e) => {
+    if (e.candidate) {
+      const payload = {
+        target: otherUser.current,
+        candidate: e.candidate,
+      };
+      socket.emit("iceCandidate", payload);
+    }
+  };
+  // 상대가 전송한 ICE 후보를 보고 자신의 ICE 후보를 설정하는 것
+  const handleNewICECandidateMsg = (gotInfo) => {
+    const candidate = new RTCIceCandidate(gotInfo);
+    peerRef.current.addIceCandidate(candidate).catch((err) => console.log(err));
+  };
+  const handleTrackEvent = (e) => {
+    console.log(e.stream);
+    otherVideo.current.srcObject = e.stream;
+  };
 
   return (
     <div>
       <video ref={localVideo} autoPlay width="200px"></video>
-      {remoteStream.map((stream) => (
-        <video src={stream} autoPlay width="200px"></video>
-      ))}
+      <video ref={otherVideo} autoPlay width="200px"></video>
     </div>
   );
 }
