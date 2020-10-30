@@ -28,13 +28,6 @@ function RoomPage({ location, history }) {
   // 새 멤버 들어오는 경우
   useEffect(() => {
     socket.on("giveMemberList", (memberList) => {
-      if (
-        memberList.findIndex((member) => member === localStorage.username) ===
-        -1
-      ) {
-        alert("방에 입장할 자격이 없습니다");
-        history.push("/room");
-      }
       setMembers(memberList);
     });
     // eslint-disable-next-line
