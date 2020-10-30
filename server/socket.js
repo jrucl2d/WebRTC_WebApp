@@ -72,7 +72,19 @@ module.exports = async (server) => {
 
     socket.on("message", (message) => {
       console.log("From client : ", message);
+      if (message.type === "newUserMedia") {
+        const exRoom = getExactRoom(rooms, message.roomID);
+        console.log("현재 방 인원 : ", exRoom.members.length);
+        socket.broadcast.emit("message", {
+          type: "roomNum",
+          number: exRoom.members.length,
+        });
+      }
       socket.broadcast.emit("message", message);
+    });
+    socket.on("isInitiator", ({ roomID }) => {
+      const exRoom = getExactRoom(rooms, roomID);
+      socket.emit("initiator", exRoom.members[0]);
     });
   });
 };

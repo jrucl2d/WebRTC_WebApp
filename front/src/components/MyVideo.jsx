@@ -4,8 +4,10 @@ import io from "socket.io-client";
 let pc;
 const SERVERLOCATION = "localhost:8000";
 let socket;
+let isChannelReady = false;
+let isInitiator = false;
 
-function MyVideo({ isInitiator, isChannelReady }) {
+function MyVideo({ roomID }) {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState([]);
   const [messageFromServer, setMessageFromServer] = useState(null);
@@ -14,18 +16,15 @@ function MyVideo({ isInitiator, isChannelReady }) {
   socket = io(SERVERLOCATION);
 
   // 스트림 요청 성공시
-  const getStream = useCallback(
-    (stream) => {
-      console.log("local stream added");
-      setLocalStream(stream);
-      localVideo.current.srcObject = stream;
-      socket.emit("message", "newUserMedia");
-      if (isInitiator) {
-        maybeStart();
-      }
-    },
-    [localStream]
-  );
+  const getStream = useCallback((stream) => {
+    console.log("local stream added");
+    setLocalStream(stream);
+    localVideo.current.srcObject = stream;
+    socket.emit("message", { type: "newUserMedia", roomID });
+    if (isInitiator) {
+      maybeStart();
+    }
+  });
   const createPeerConnection = useCallback(() => {
     try {
       pc = new RTCPeerConnection(null);
@@ -71,7 +70,7 @@ function MyVideo({ isInitiator, isChannelReady }) {
         doCall();
       }
     } else {
-      console.log("maybeStart error");
+      console.log("아직 통신 시작 안 됨");
     }
   });
   const setLocal = (sessionDescription) => {
@@ -95,7 +94,7 @@ function MyVideo({ isInitiator, isChannelReady }) {
     socket.on("message", (message) => {
       setMessageFromServer(message);
       console.log("Client got message : ", message);
-      if (message === "newUserMedia") {
+      if (message.type === "newUserMedia") {
         maybeStart();
       } else if (message.type === "offer") {
         if (!isInitiator && !isStarted) {
@@ -111,12 +110,19 @@ function MyVideo({ isInitiator, isChannelReady }) {
           candidate: message.candidate,
         });
         pc.addIceCandidate(candidate);
+      } else if (message.type === "roomNum") {
+        if (message.number >= 2) {
+          isChannelReady = true;
+        }
       }
     });
   }, [messageFromServer]);
 
-  const onPlayCamera = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    socket.emit("isInitiator", { roomID });
+    socket.on("initiator", (bangjang) => {
+      isInitiator = bangjang === localStorage.username;
+    });
     navigator.mediaDevices
       .getUserMedia({
         video: true,
@@ -124,11 +130,10 @@ function MyVideo({ isInitiator, isChannelReady }) {
       })
       .then(getStream)
       .catch((err) => console.error(err));
-  };
+  }, [SERVERLOCATION]);
 
   return (
     <div>
-      <button onClick={onPlayCamera}>카메라 켜기</button>
       <video ref={localVideo} autoPlay width="200px"></video>
       {remoteStream.map((stream) => (
         <video src={stream} autoPlay width="200px"></video>
