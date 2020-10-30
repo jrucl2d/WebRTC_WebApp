@@ -44,7 +44,10 @@ function RoomPage({ location, history }) {
           </li>
         ))}
       </ul>
-      <MyVideo isInitiator={members.length === 1 ? true : false} />
+      <MyVideo
+        isInitiator={members.length === 1 ? true : false}
+        isChannelReady={members.length >= 2 ? true : false}
+      />
     </div>
   );
 }

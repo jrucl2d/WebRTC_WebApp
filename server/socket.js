@@ -69,5 +69,10 @@ module.exports = async (server) => {
         io.emit("giveMemberList", exRoom.members);
       }
     });
+
+    socket.on("message", (message) => {
+      console.log("From client : ", message);
+      socket.broadcast.emit("message", message);
+    });
   });
 };
