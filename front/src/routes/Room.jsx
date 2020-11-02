@@ -38,7 +38,7 @@ function Room({ match }) {
   };
 
   const callUser = (userID) => {
-    peerRef.current = createPeer(userID); // 상대방의 userID로 peer 객체를 생성
+    peerRef.current = createPeer(userID); // 상대방의 userID를 파라미터로 넘기며(협상 위해) peer 객체를 생성
     userStream.current // 상대방에게 offer하기 위해서 stream 정보를 peer의 track에 추가
       .getTracks()
       .forEach((track) => peerRef.current.addTrack(track, userStream.current));
