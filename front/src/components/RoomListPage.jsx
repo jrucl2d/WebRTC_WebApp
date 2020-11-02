@@ -51,6 +51,7 @@ function RoomListPage() {
     socket.emit("joinRoom", {
       roomID: e.target.name,
       username: localStorage.username,
+      socketID: socket.id,
     });
     alert(`[${e.target.name}] 방에 입장합니다!`);
   };

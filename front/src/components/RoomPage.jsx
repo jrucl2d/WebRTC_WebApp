@@ -20,6 +20,7 @@ function RoomPage({ location, history }) {
       socket.emit("memberDisconnect", {
         username: localStorage.username,
         roomID: ROOMNAME,
+        socketID: socket.id,
       });
       socket.off();
     };

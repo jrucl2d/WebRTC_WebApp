@@ -20,7 +20,7 @@ function MyVideo({ roomID }) {
   const getStream = (stream) => {
     localVideo.current.srcObject = stream;
     userStream.current = stream;
-    socket.emit("join room", { roomID, username: localStorage.username });
+    socket.emit("join room", { roomID, username: localStorage.username, socketID : socket.id });
 
     socket.on("other user", (userID) => {
       callUser(userID);
