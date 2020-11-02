@@ -11,8 +11,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.set("port", process.env.PORT || 8000);
 
-// Routing
-
 app.use((req, res, next) => {
   const error = new Error(`${req.method} ${req.url} error`);
   error.status = 404;
