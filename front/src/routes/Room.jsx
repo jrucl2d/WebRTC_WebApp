@@ -4,6 +4,7 @@ import io from "socket.io-client";
 function Room({ match }) {
   const userVideo = useRef();
   const [partnerVideos, setPartnerVideos] = useState([]);
+  const partnerVideosRef = useRef([]);
   const peerRef = useRef(); // peer 객체 생성에 사용하는 임시 변수
   const socketRef = useRef();
   const otherUsers = useRef([]); // 다른 유저들의 userID를 저장
@@ -33,8 +34,6 @@ function Room({ match }) {
 
     // 기존 사람들 입장에서 다른 유저가 들어왔음을 확인
     socketRef.current.on("user joined", (userID) => {
-      console.log("새로운 사람이 들어왔습니다");
-      console.dir(otherUsers.current);
       otherUsers.current.push(userID);
     });
     socketRef.current.on("offer", handleRecieveCall); // Callee는 Caller의 offer을 들을 것
@@ -144,14 +143,12 @@ function Room({ match }) {
         caller: socketRef.current.id,
         candidate: e.candidate,
       };
-      console.log("ICE 데이터 보냅니다.");
       socketRef.current.emit("ice-candidate", payload);
     }
   };
 
   // Ice Cnadidate 이벤트가 발생해서 상대방이 해당 정보를 전송하면, 그 정보를 받음
   const handleNewICECandidateMsg = (incoming) => {
-    console.log("ICE 데이터 받습니다.");
     const candidate = new RTCIceCandidate(incoming.candidate);
 
     const index = otherUsers.current.findIndex(
@@ -164,18 +161,23 @@ function Room({ match }) {
   };
 
   const handleTrackEvent = (e) => {
-    setPartnerVideos([...partnerVideos, e.streams[0]]);
+    partnerVideosRef.current.push(e.streams[0]);
+    console.log("발생은 여기서");
+    console.log(partnerVideosRef.current);
   };
+  useEffect(() => {
+    console.log("반영은 여기서");
+    console.log(partnerVideosRef.current);
+    setPartnerVideos(partnerVideosRef.current);
+  }, [partnerVideosRef]);
 
   return (
     <div>
       <h1>Video Chat</h1>
       <video autoPlay width="200px" ref={userVideo} />
-      {partnerVideos.length}
-      {partnerVideos &&
-        partnerVideos.map((partnerVideo, index) => (
-          <Video key={index} stream={partnerVideo} />
-        ))}
+      {partnerVideos.map((partnerVideo, index) => (
+        <Video key={index} stream={partnerVideo} />
+      ))}
     </div>
   );
 }
