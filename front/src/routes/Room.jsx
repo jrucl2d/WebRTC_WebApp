@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import io from "socket.io-client";
+import { useDispatch, useSelector } from "react-redux";
+import { updateVideos } from "../modules/videos";
 
 function Room({ match }) {
+  const dispatch = useDispatch();
+  const partnerVideos = useSelector((state) => state.videos);
   const userVideo = useRef();
-  const [partnerVideos, setPartnerVideos] = useState([]);
+  // const [partnerVideos, setPartnerVideos] = useState([]);
   const partnerVideosRef = useRef([]);
   const peerRef = useRef(); // peer 객체 생성에 사용하는 임시 변수
   const socketRef = useRef();
@@ -162,9 +166,9 @@ function Room({ match }) {
 
   const handleTrackEvent = (e) => {
     partnerVideosRef.current.push(e.streams[0]);
+    dispatch(updateVideos(e.streams[0]));
     console.log("발생은 여기서");
-    console.log(partnerVideosRef.current);
-    setPartnerVideos(partnerVideosRef.current);
+    console.log(partnerVideos);
   };
   return (
     <div>
