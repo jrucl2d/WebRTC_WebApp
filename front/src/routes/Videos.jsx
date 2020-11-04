@@ -1,12 +1,8 @@
 import React, { useRef, useEffect } from "react";
-import io from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { updateVideos } from "../modules/videos";
 
-const SERVER_ADDRESS = "localhost:8000";
-const socket = io(SERVER_ADDRESS);
-
-function Videos({ match }) {
+function Videos({ match, socket }) {
   const dispatch = useDispatch();
 
   const userVideo = useRef();
