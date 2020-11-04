@@ -26,5 +26,10 @@ module.exports = async (server) => {
     socket.on("ice-candidate", (incoming) => {
       socket.broadcast.emit("ice-candidate", incoming);
     });
+
+    socket.on("out room", (id) => {
+      console.log(`${id}가 나갔누.`);
+      io.emit("member out", id);
+    });
   });
 };

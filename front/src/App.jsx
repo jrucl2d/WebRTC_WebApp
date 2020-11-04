@@ -9,9 +9,6 @@ import Room from "./routes/Room";
 function App() {
   return (
     <div className="App">
-      {/* <Route exact path="/" component={MainPage} />
-      <Route exact path="/room" component={RoomListPage} />
-      <Route path="/room/:id" component={RoomPage} /> */}
       <Route path="/" exact component={CreateRoom} />
       <Route path="/room/:roomID" exact component={Room} />
     </div>

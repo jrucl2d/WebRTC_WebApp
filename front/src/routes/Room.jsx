@@ -1,24 +1,27 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import io from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { updateVideos } from "../modules/videos";
 
 function Room({ match }) {
   const dispatch = useDispatch();
-  const partnerVideos = useSelector((state) => state.videos);
-  const userVideo = useRef();
-  // const [partnerVideos, setPartnerVideos] = useState([]);
-  const partnerVideosRef = useRef([]);
-  const peerRef = useRef(); // peer 객체 생성에 사용하는 임시 변수
+
   const socketRef = useRef();
+  const userVideo = useRef();
+  const userStream = useRef(); // 사용자의 stream
+
+  const partnerVideos = useSelector((state) => state.videos);
+  const peerRef = useRef(); // peer 객체 생성에 사용하는 임시 변수
   const otherUsers = useRef([]); // 다른 유저들의 userID를 저장
-  const peers = useRef([]);
-  const userStream = useRef();
+  const peers = useRef([]); // 다른 유저들의 peer들을 저장
 
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: false })
       .then(getStream);
+    return () => {
+      socketRef.current.emit("out room", socketRef.current.id);
+    };
   }, []);
 
   const getStream = (stream) => {
@@ -165,17 +168,17 @@ function Room({ match }) {
   };
 
   const handleTrackEvent = (e) => {
-    partnerVideosRef.current.push(e.streams[0]);
-    dispatch(updateVideos(e.streams[0]));
-    console.log("발생은 여기서");
-    console.log(partnerVideos);
+    dispatch(updateVideos(e.streams[0])); // redux에 새로운 유저 video stream state를 update하는 함수 dispatch
+    socketRef.current.on("member out", (id) => {
+      alert(id + "가 나갔다!");
+    });
   };
   return (
     <div>
       <h1>Video Chat</h1>
       <video autoPlay width="200px" ref={userVideo} />
       {partnerVideos.map((partnerVideo, index) => (
-        <Video key={index} stream={partnerVideo} />
+        <Video key={partnerVideo.id} stream={partnerVideo} />
       ))}
     </div>
   );
