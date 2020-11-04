@@ -4,7 +4,7 @@ import Videos from "./Videos";
 function Room({ match }) {
   return (
     <div>
-      <h1>Room 입장</h1>
+      <h1>{localStorage.roomName}</h1>
       <Videos match={match} />
     </div>
   );

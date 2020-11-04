@@ -25,11 +25,11 @@ module.exports = async (server) => {
 
     socket.on("join room", (roomID) => {
       if (rooms[roomID]) {
-        rooms[roomID].push(socket.id);
+        rooms[roomID].members.push(socket.id);
       } else {
-        rooms[roomID] = [socket.id]; // 방장은 배열에 넣어서 처음 넣어줌
+        rooms[roomID].members = [socket.id]; // 방장은 배열에 넣어서 처음 넣어줌
       }
-      const otherUsers = rooms[roomID].filter((id) => id !== socket.id);
+      const otherUsers = rooms[roomID].members.filter((id) => id !== socket.id);
       if (otherUsers) {
         socket.emit("other users", otherUsers); // 본인에게 기존 사람이 있다고 알림
         socket.broadcast.emit("user joined", socket.id); // 기존 사람들에게는 본인이 새로 들어간다고 알림

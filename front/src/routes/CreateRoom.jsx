@@ -50,11 +50,7 @@ function CreateRoom() {
   };
 
   const onClickJoin = (e) => {
-    socket.emit("join room", {
-      roomID: e.target.name,
-      username: localStorage.username,
-      socketID: socket.id,
-    });
+    localStorage.roomName = e.target.name;
     alert(`[${e.target.name}] 방에 입장합니다!`);
   };
 

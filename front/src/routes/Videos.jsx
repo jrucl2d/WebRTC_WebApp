@@ -21,9 +21,9 @@ function Videos({ match }) {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: false })
       .then(getStream);
-    console.log(socket);
     return () => {
       socket.emit("out room", socket.id);
+      socket.off();
     };
   }, []);
 
