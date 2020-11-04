@@ -31,12 +31,16 @@ function Videos({ match }) {
     userVideo.current.srcObject = stream;
     userStream.current = stream;
 
-    socket.emit("join room", match.params.roomID);
+    socket.emit("join room", {
+      roomID: match.params.roomID,
+      streamID: stream.id,
+      userName: localStorage.username,
+    });
 
     // 새로 들어간 사람 입장에서 다른 사람 전부의 정보를 전해들음
     socket.on("other users", (usersID) => {
       usersID.forEach((userID) => {
-        callUser(userID); // userID들은 이미 존재하던 사람들. 그 사람들에게 call
+        callUser(userID.socketID); // userID들은 이미 존재하던 사람들. 그 사람들에게 call
         otherUsers.current.push(userID);
       });
     });
@@ -85,7 +89,7 @@ function Videos({ match }) {
   // Caller 입장에서 Offer을 제공(offer 이벤트를 emit)
   const handleNegotiationNeededEvent = (userID) => {
     const index = otherUsers.current.findIndex(
-      (otherUser) => otherUser === userID
+      (otherUser) => otherUser.socketID === userID
     );
     const thePeer = peers.current[index];
     thePeer
@@ -138,7 +142,7 @@ function Videos({ match }) {
   const handleAnswer = (message) => {
     const desc = new RTCSessionDescription(message.sdp);
     const index = otherUsers.current.findIndex(
-      (otherUser) => otherUser === message.caller
+      (otherUser) => otherUser.socketID === message.caller
     );
     const thePeer = peers.current[index];
     thePeer.setRemoteDescription(desc).catch((e) => console.log(e));
@@ -161,7 +165,7 @@ function Videos({ match }) {
     const candidate = new RTCIceCandidate(incoming.candidate);
 
     const index = otherUsers.current.findIndex(
-      (otherUser) => otherUser === incoming.caller
+      (otherUser) => otherUser.socketID === incoming.caller
     );
     const thePeer = peers.current[index];
     thePeer
@@ -178,9 +182,17 @@ function Videos({ match }) {
   return (
     <div>
       <h1>Video Chat</h1>
+      <p>{localStorage.username}</p>
       <video autoPlay width="200px" ref={userVideo} />
       {partnerVideos.map((partnerVideo) => (
-        <Video key={partnerVideo.id} stream={partnerVideo} />
+        <div key={partnerVideo.id}>
+          {otherUsers.current.map((otherUser) =>
+            otherUser.streamID === partnerVideo.id ? (
+              <p key={otherUser.socketID}>{otherUser.userName}</p>
+            ) : null
+          )}
+          <Video stream={partnerVideo} />
+        </div>
       ))}
     </div>
   );
