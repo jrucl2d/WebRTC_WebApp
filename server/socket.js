@@ -24,7 +24,7 @@ module.exports = async (server) => {
       io.to(payload.target).emit("answer", payload);
     });
     socket.on("ice-candidate", (incoming) => {
-      io.to(incoming.target).emit("ice-candidate", incoming.candidate);
+      io.to(incoming.target).emit("ice-candidate", incoming);
     });
   });
 };
