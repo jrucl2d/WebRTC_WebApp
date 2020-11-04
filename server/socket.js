@@ -1,10 +1,28 @@
 const socketIO = require("socket.io");
 
-const rooms = {};
+const rooms = {
+  wlekgjweljgkwelkgj12421: {
+    roomName: "바보방",
+    members: [],
+  },
+};
 
 module.exports = async (server) => {
   const io = socketIO(server);
   io.on("connection", (socket) => {
+    socket.on("get room list", () => {
+      socket.emit("give room list", rooms);
+    });
+    socket.on("make room", ({ roomName, roomID }) => {
+      // 방 생성
+      console.log(roomName + "방 생성!");
+      rooms[roomID] = {
+        roomName,
+        members: [],
+      };
+      socket.emit("give room list", rooms);
+    });
+
     socket.on("join room", (roomID) => {
       if (rooms[roomID]) {
         rooms[roomID].push(socket.id);
