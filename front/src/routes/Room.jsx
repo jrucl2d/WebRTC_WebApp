@@ -164,13 +164,8 @@ function Room({ match }) {
     partnerVideosRef.current.push(e.streams[0]);
     console.log("발생은 여기서");
     console.log(partnerVideosRef.current);
-  };
-  useEffect(() => {
-    console.log("반영은 여기서");
-    console.log(partnerVideosRef.current);
     setPartnerVideos(partnerVideosRef.current);
-  }, [partnerVideosRef]);
-
+  };
   return (
     <div>
       <h1>Video Chat</h1>
