@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateVideos } from "../modules/videos";
+import { updateVideos, deleteVideo, clearVideos } from "../modules/videos";
 
 function Videos({ match, socket }) {
   const dispatch = useDispatch();
@@ -18,8 +18,16 @@ function Videos({ match, socket }) {
       .getUserMedia({ video: true, audio: false })
       .then(getStream);
     return () => {
-      socket.emit("out room", socket.id);
+      socket.emit("out room");
       socket.off();
+      userStream.current.getTracks().forEach((track) => {
+        track.stop();
+      });
+      userVideo.current = null;
+      userStream.current = null;
+      otherUsers.current = null;
+      peers.current = null;
+      dispatch(clearVideos());
     };
   }, []);
 
@@ -31,6 +39,12 @@ function Videos({ match, socket }) {
       roomID: match.params.roomID,
       streamID: stream.id,
       userName: localStorage.username,
+    });
+
+    // 유저가 나갔을 때
+    socket.on("out user", ({ username, streamID }) => {
+      alert(`${username} (이)가 나갔습니다!`);
+      dispatch(deleteVideo(streamID));
     });
 
     // 새로 들어간 사람 입장에서 다른 사람 전부의 정보를 전해들음
@@ -57,7 +71,6 @@ function Videos({ match, socket }) {
       .getTracks()
       .forEach((track) => peerRef.current.addTrack(track, userStream.current));
     peers.current.push(peerRef.current);
-    // setPeers([...peers, peerRef.current]); // 기존의 peer 배열에 추가
   };
 
   // 나 자신의 peer 객체를 생성하는데 상대방(userID)와의 offer, answer작업에 대한 콜백 함수를 설정

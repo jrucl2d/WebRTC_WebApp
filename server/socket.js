@@ -5,6 +5,32 @@ const rooms = {
     roomName: "바보방",
     members: [],
   },
+  dslfjlkfjwelkfjwelfjwe: {
+    roomName: "zz",
+    members: [],
+  },
+};
+
+// 해당 socket이 방을 나가는 경우
+const outRoom = (socket) => {
+  Object.entries(rooms).forEach((room) => {
+    let username = "";
+    let exUserStreamID = "";
+    const newRoomMembers = room[1].members.filter((v) => {
+      if (v.socketID === socket.id) {
+        username = v.userName;
+        exUserStreamID = v.streamID;
+        socket.broadcast.emit("out user", {
+          username,
+          streamID: exUserStreamID,
+        }); // 나머지 인원에게 나간 사람 정보 broadcast
+      }
+      if (v.socketID !== socket.id) {
+        return v;
+      }
+    });
+    room[1].members = newRoomMembers; // rooms의 정보 갱신
+  });
 };
 
 module.exports = async (server) => {
@@ -51,9 +77,14 @@ module.exports = async (server) => {
       socket.broadcast.emit("ice-candidate", incoming);
     });
 
-    socket.on("out room", (id) => {
-      console.log(`${id}가 나갔누.`);
-      io.emit("member out", id);
+    // 창을 완전히 닫았을 경우
+    socket.on("disconnect", () => {
+      outRoom(socket);
+    });
+
+    // 뒤로가기로 방을 나갔을 경우
+    socket.on("out room", () => {
+      outRoom(socket);
     });
   });
 };

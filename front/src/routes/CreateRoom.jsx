@@ -13,8 +13,6 @@ function CreateRoom() {
 
   useEffect(() => {
     socket = io(SERVERLOCATION);
-    // console.log(socket);
-
     socket.emit("get room list");
   }, []);
   useEffect(() => {
