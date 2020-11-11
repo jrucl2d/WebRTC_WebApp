@@ -24,6 +24,7 @@ function CreateRoom() {
   const onChangeRoomName = (e) => {
     setRoomName(e.target.value);
   };
+
   const onClickMakeRoom = (e) => {
     e.preventDefault();
     if (roomName === "") {

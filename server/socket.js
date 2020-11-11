@@ -1,15 +1,6 @@
 const socketIO = require("socket.io");
 
-const rooms = {
-  wlekgjweljgkwelkgj12421: {
-    roomName: "바보방",
-    members: [],
-  },
-  dslfjlkfjwelkfjwelfjwe: {
-    roomName: "zz",
-    members: [],
-  },
-};
+const rooms = {};
 
 // 해당 socket이 방을 나가는 경우
 const outRoom = (socket) => {
@@ -53,7 +44,7 @@ module.exports = async (server) => {
       if (rooms[roomID]) {
         rooms[roomID].members.push({ socketID: socket.id, streamID, userName });
       } else {
-        rooms[roomID].members = [{ ocketID: socket.id, streamID, userName }]; // 방장은 배열에 넣어서 처음 넣어줌
+        rooms[roomID].members = [{ socketID: socket.id, streamID, userName }]; // 방장은 배열에 넣어서 처음 넣어줌
       }
       const otherUsers = rooms[roomID].members.filter(
         (id) => id.socketID !== socket.id
