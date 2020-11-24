@@ -4,24 +4,28 @@ const rooms = {};
 
 // 해당 socket이 방을 나가는 경우
 const outRoom = (socket) => {
+  let theID = "";
   Object.entries(rooms).forEach((room) => {
     let username = "";
     let exUserStreamID = "";
     const newRoomMembers = room[1].members.filter((v) => {
       if (v.socketID === socket.id) {
+        theID = room[0];
         username = v.userName;
         exUserStreamID = v.streamID;
-        socket.to(v.roomID).broadcast.emit("out user", {
+        socket.to(theID).broadcast.emit("out user", {
           username,
           streamID: exUserStreamID,
         }); // 나머지 인원에게 나간 사람 정보 broadcast
       }
+      socket.leave(theID);
       if (v.socketID !== socket.id) {
         return v;
       }
     });
     room[1].members = newRoomMembers; // rooms의 정보 갱신
   });
+  socket.to(theID).broadcast.emit("give room list", rooms);
 };
 
 module.exports = async (server) => {
@@ -32,13 +36,12 @@ module.exports = async (server) => {
     });
     socket.on("make room", ({ roomName, roomID }) => {
       // 방 생성
-      console.log(roomName + "방 생성!");
+      console.log(roomName + "/" + roomID + "방 생성!");
       rooms[roomID] = {
         roomName,
         members: [],
       };
-      socket.emit("give room list", rooms);
-      socket.broadcast.emit("give room list", rooms);
+      io.emit("give room list", rooms);
     });
 
     socket.on("join room", ({ roomID, streamID, userName }) => {
@@ -50,6 +53,7 @@ module.exports = async (server) => {
       const otherUsers = rooms[roomID].members.filter(
         (id) => id.socketID !== socket.id
       );
+      socket.join(roomID);
       if (otherUsers) {
         socket.emit("other users", otherUsers); // 본인에게 기존 사람이 있다고 알림
         socket.to(roomID).broadcast.emit("user joined", {
