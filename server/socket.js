@@ -11,7 +11,7 @@ const outRoom = (socket) => {
       if (v.socketID === socket.id) {
         username = v.userName;
         exUserStreamID = v.streamID;
-        socket.broadcast.emit("out user", {
+        socket.to(v.roomID).broadcast.emit("out user", {
           username,
           streamID: exUserStreamID,
         }); // 나머지 인원에게 나간 사람 정보 broadcast
@@ -38,6 +38,7 @@ module.exports = async (server) => {
         members: [],
       };
       socket.emit("give room list", rooms);
+      socket.broadcast.emit("give room list", rooms);
     });
 
     socket.on("join room", ({ roomID, streamID, userName }) => {
@@ -51,7 +52,7 @@ module.exports = async (server) => {
       );
       if (otherUsers) {
         socket.emit("other users", otherUsers); // 본인에게 기존 사람이 있다고 알림
-        socket.broadcast.emit("user joined", {
+        socket.to(roomID).broadcast.emit("user joined", {
           socketID: socket.id,
           streamID,
           userName,

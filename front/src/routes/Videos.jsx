@@ -29,6 +29,7 @@ function Videos({ match, socket }) {
       peers.current = null;
       dispatch(clearVideos());
     };
+    // eslint-disable-next-line
   }, []);
 
   const getStream = (stream) => {
@@ -210,7 +211,7 @@ const Video = ({ stream }) => {
   const ref = useRef();
   useEffect(() => {
     ref.current.srcObject = stream;
-  }, []);
+  }, [stream]);
   return <video width="200px" autoPlay ref={ref} />;
 };
 

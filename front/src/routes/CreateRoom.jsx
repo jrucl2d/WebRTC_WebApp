@@ -32,11 +32,13 @@ function CreateRoom() {
       return;
     }
     let roomNameCheck = false;
+    // eslint-disable-next-line
     Object.entries(rooms).map((room) => {
       if (room[1].roomName === roomName) {
         alert("이미 있는 방 이름입니다!");
         roomNameRef.current.value = "";
         roomNameCheck = true;
+        // eslint-disable-next-line
         return;
       }
     });
