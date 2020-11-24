@@ -1,59 +1,61 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import io from "socket.io-client";
 import { v4 as uuid } from "uuid";
 
-const SERVERLOCATION = "localhost:8000";
-let socket;
-
 function CreateRoom() {
+  const SERVER_LOCATION = useRef("localhost:8000");
+  const socket = useRef();
   const roomNameRef = useRef(null);
   const [rooms, setRooms] = useState({});
   const [roomName, setRoomName] = useState("");
 
   useEffect(() => {
-    socket = io(SERVERLOCATION);
-    socket.emit("get room list");
+    socket.current = io(SERVER_LOCATION.current);
+    socket.current.emit("get room list");
   }, []);
   useEffect(() => {
-    socket.on("give room list", (rooms) => {
+    socket.current.on("give room list", (rooms) => {
       setRooms(rooms);
     });
   }, [rooms]);
 
-  const onChangeRoomName = (e) => {
+  const onChangeRoomName = useCallback((e) => {
     setRoomName(e.target.value);
-  };
+  }, []);
 
-  const onClickMakeRoom = (e) => {
-    e.preventDefault();
-    if (roomName === "") {
-      alert("방 이름을 입력하세요");
-      return;
-    }
-    let roomNameCheck = false;
-    // eslint-disable-next-line
-    Object.entries(rooms).map((room) => {
-      if (room[1].roomName === roomName) {
-        alert("이미 있는 방 이름입니다!");
-        roomNameRef.current.value = "";
-        roomNameCheck = true;
-        // eslint-disable-next-line
+  const onClickMakeRoom = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (roomName === "") {
+        alert("방 이름을 입력하세요");
         return;
       }
-    });
-    if (!roomNameCheck) {
-      socket.emit("make room", { roomName, roomID: uuid() });
-      alert(`[${roomName}] 방이 생성되었습니다`);
-      setRoomName("");
-      roomNameRef.current.value = "";
-    }
-  };
+      let roomNameCheck = false;
+      // eslint-disable-next-line
+      Object.entries(rooms).map((room) => {
+        if (room[1].roomName === roomName) {
+          alert("이미 있는 방 이름입니다!");
+          roomNameRef.current.value = "";
+          roomNameCheck = true;
+          // eslint-disable-next-line
+          return;
+        }
+      });
+      if (!roomNameCheck) {
+        socket.current.emit("make room", { roomName, roomID: uuid() });
+        alert(`[${roomName}] 방이 생성되었습니다`);
+        setRoomName("");
+        roomNameRef.current.value = "";
+      }
+    },
+    [roomName, rooms]
+  );
 
-  const onClickJoin = (e) => {
+  const onClickJoin = useCallback((e) => {
     localStorage.roomName = e.target.name;
     alert(`[${e.target.name}] 방에 입장합니다!`);
-  };
+  }, []);
 
   return (
     <div>
@@ -89,4 +91,4 @@ function CreateRoom() {
   );
 }
 
-export default CreateRoom;
+export default React.memo(CreateRoom);
