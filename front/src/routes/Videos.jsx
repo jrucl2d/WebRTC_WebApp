@@ -205,6 +205,7 @@ function Videos({ match, socket }) {
         const payload = {
           caller: socket.id,
           candidate: e.candidate,
+          roomID: match.params.roomID,
         };
         socket.emit("ice-candidate", payload);
       }

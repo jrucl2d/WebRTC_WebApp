@@ -70,7 +70,7 @@ module.exports = async (server) => {
       io.to(payload.target).emit("answer", payload);
     });
     socket.on("ice-candidate", (incoming) => {
-      socket.broadcast.emit("ice-candidate", incoming);
+      socket.to(incoming.roomID).broadcast.emit("ice-candidate", incoming);
     });
 
     // 창을 완전히 닫았을 경우
