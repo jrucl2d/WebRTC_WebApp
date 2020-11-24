@@ -19,6 +19,7 @@ function Videos({ match, socket }) {
       .then(getStream)
       .catch((err) => console.error(err));
     return () => {
+      console.log(socket.room);
       socket.emit("out room");
       socket.off();
       userStream.current &&
@@ -48,6 +49,7 @@ function Videos({ match, socket }) {
       // 유저가 나갔을 때
       socket.on("out user", ({ username, streamID }) => {
         // alert(`${username} (이)가 나갔습니다!`);
+        console.log(username + " out!");
         dispatch(deleteVideo(streamID));
       });
 
