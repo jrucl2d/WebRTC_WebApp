@@ -16,13 +16,15 @@ function Videos({ match, socket }) {
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: false })
-      .then(getStream);
+      .then(getStream)
+      .catch((err) => console.error(err));
     return () => {
       socket.emit("out room");
       socket.off();
-      userStream.current.getTracks().forEach((track) => {
-        track.stop();
-      });
+      userStream.current &&
+        userStream.current.getTracks().forEach((track) => {
+          track.stop();
+        });
       userVideo.current = null;
       userStream.current = null;
       otherUsers.current = null;
@@ -45,7 +47,7 @@ function Videos({ match, socket }) {
 
       // 유저가 나갔을 때
       socket.on("out user", ({ username, streamID }) => {
-        alert(`${username} (이)가 나갔습니다!`);
+        // alert(`${username} (이)가 나갔습니다!`);
         dispatch(deleteVideo(streamID));
       });
 
@@ -71,14 +73,18 @@ function Videos({ match, socket }) {
 
   const callUser = useCallback(
     (userID) => {
-      peerRef.current = null; // 임시 변수 초기화
-      peerRef.current = createPeer(userID); // 상대방의 userID를 파라미터로 넘기며(협상 위해) peer 객체를 생성
-      userStream.current // 상대방에게 offer하기 위해서 stream 정보를 peer의 track에 추가
-        .getTracks()
-        .forEach((track) =>
-          peerRef.current.addTrack(track, userStream.current)
-        );
-      peers.current.push(peerRef.current);
+      try {
+        peerRef.current = null; // 임시 변수 초기화
+        peerRef.current = createPeer(userID); // 상대방의 userID를 파라미터로 넘기며(협상 위해) peer 객체를 생성
+        userStream.current // 상대방에게 offer하기 위해서 stream 정보를 peer의 track에 추가
+          .getTracks()
+          .forEach((track) =>
+            peerRef.current.addTrack(track, userStream.current)
+          );
+        peers.current.push(peerRef.current);
+      } catch (err) {
+        console.error(err);
+      }
     },
     // eslint-disable-next-line
     [socket, match]
@@ -130,7 +136,7 @@ function Videos({ match, socket }) {
           };
           socket.emit("offer", payload);
         })
-        .catch((e) => console.log(e));
+        .catch((err) => console.error(err));
     },
     // eslint-disable-next-line
     [socket, match]
@@ -164,7 +170,8 @@ function Videos({ match, socket }) {
             sdp: thePeer.localDescription,
           };
           socket.emit("answer", payload);
-        });
+        })
+        .catch((err) => console.error(err));
     },
     // eslint-disable-next-line
     [socket, match]
@@ -173,12 +180,16 @@ function Videos({ match, socket }) {
   // Caller 입장에서 Callee의 answer을 받았을 때
   const handleAnswer = useCallback(
     (message) => {
-      const desc = new RTCSessionDescription(message.sdp);
-      const index = otherUsers.current.findIndex(
-        (otherUser) => otherUser.socketID === message.caller
-      );
-      const thePeer = peers.current[index];
-      thePeer.setRemoteDescription(desc).catch((e) => console.log(e));
+      try {
+        const desc = new RTCSessionDescription(message.sdp);
+        const index = otherUsers.current.findIndex(
+          (otherUser) => otherUser.socketID === message.caller
+        );
+        const thePeer = peers.current[index];
+        thePeer.setRemoteDescription(desc).catch((e) => console.log(e));
+      } catch (err) {
+        console.error(err);
+      }
     },
     // eslint-disable-next-line
     [socket, match]

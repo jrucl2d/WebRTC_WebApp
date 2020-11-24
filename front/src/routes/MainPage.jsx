@@ -1,24 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 function MainPage() {
   const [username, setUsername] = useState("");
   const [loggedInUser, setLoggedInUser] = useState("");
 
-  const onChangeUsername = (e) => {
+  const onChangeUsername = useCallback((e) => {
     setUsername(e.target.value);
-  };
-  const onClickUsername = (e) => {
-    e.preventDefault();
-    localStorage.username = username;
-    setLoggedInUser(username);
-  };
-  const onClickLogout = (e) => {
+  }, []);
+  const onClickUsername = useCallback(
+    (e) => {
+      e.preventDefault();
+      localStorage.username = username;
+      setLoggedInUser(username);
+    },
+    [username]
+  );
+  const onClickLogout = useCallback((e) => {
     e.preventDefault();
     localStorage.removeItem("username");
     setLoggedInUser("");
     window.location.href = "/";
-  };
+  }, []);
   return (
     <div>
       <h1>main page</h1>
