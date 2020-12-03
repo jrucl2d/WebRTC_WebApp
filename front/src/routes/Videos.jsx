@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateVideos, deleteVideo, clearVideos } from "../modules/videos";
+import "./VideoStyle.css";
 
 function Videos({ match, socket }) {
   const dispatch = useDispatch();
@@ -245,17 +246,19 @@ function Videos({ match, socket }) {
     <div>
       <h1>Video Chat</h1>
       <p>{localStorage.username}</p>
-      <video autoPlay width="200px" ref={userVideo} />
-      {partnerVideos.map((partnerVideo) => (
-        <div key={partnerVideo.id}>
-          {otherUsers.current.map((otherUser) =>
-            otherUser.streamID === partnerVideo.id ? (
-              <p key={otherUser.socketID}>{otherUser.userName}</p>
-            ) : null
-          )}
-          <Video stream={partnerVideo} />
-        </div>
-      ))}
+      <div className="videos-grid">
+        <video autoPlay width="200px" ref={userVideo} className="local-video" />
+        {partnerVideos.map((partnerVideo) => (
+          <div key={partnerVideo.id}>
+            {otherUsers.current.map((otherUser) =>
+              otherUser.streamID === partnerVideo.id ? (
+                <p key={otherUser.socketID}>{otherUser.userName}</p>
+              ) : null
+            )}
+            <Video stream={partnerVideo} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
