@@ -1,0 +1,10 @@
+.videos-grid {
+  display: flex;
+}
+.local-video {
+  display: inline-block;
+  margin-right: 1rem;
+}
+.other-video {
+  display: inline-block;
+}

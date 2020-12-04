@@ -244,12 +244,13 @@ function Videos({ match, socket }) {
   );
   return (
     <div>
-      <h1>Video Chat</h1>
-      <p>{localStorage.username}</p>
       <div className="videos-grid">
-        <video autoPlay width="200px" ref={userVideo} className="local-video" />
+        <div className="local-video">
+          <p>{localStorage.username}</p>
+          <video autoPlay width="700px" ref={userVideo} />
+        </div>
         {partnerVideos.map((partnerVideo) => (
-          <div key={partnerVideo.id}>
+          <div key={partnerVideo.id} className="other-video">
             {otherUsers.current.map((otherUser) =>
               otherUser.streamID === partnerVideo.id ? (
                 <p key={otherUser.socketID}>{otherUser.userName}</p>
